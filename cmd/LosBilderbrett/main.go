@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	store, err := storage.NewFileStore("/tmp/media")
+	store, err := storage.GetFileStore("/tmp/media")
 	if err != nil {
 		log.Fatal("Unable to get FileStore", err)
 	}
@@ -43,7 +43,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request, s storage.Store) {
 		return
 	}
 
-	hash, err := s.Save(file)
+	hash, err := s.SaveFile(file)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("Failed to save file to disk")
@@ -64,7 +64,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request, s storage.Store) {
 
 func retrieveFile(w http.ResponseWriter, r *http.Request, s storage.Store) {
 	vars := mux.Vars(r)
-	file, err := s.Get(vars["filename"])
+	file, err := s.GetFileWithHash(vars["filename"])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}

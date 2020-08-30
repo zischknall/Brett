@@ -8,17 +8,15 @@ import (
 	"github.com/spf13/afero"
 )
 
-const HashSize = 32
-
 var fs = afero.NewOsFs()
 
-// FileStore represents a store using the local filesystem.
+// FileStore implements a store using the local filesystem.
 type FileStore struct {
 	Path string
 }
 
-// NewFileStore creates store at given path.
-func NewFileStore(path string) (*FileStore, error) {
+// GetFileStore creates a FileStore at given path.
+func GetFileStore(path string) (*FileStore, error) {
 	cleanPath := filepath.Clean(path)
 	err := fs.MkdirAll(cleanPath, 0755)
 	if err != nil {
@@ -30,9 +28,9 @@ func NewFileStore(path string) (*FileStore, error) {
 	}, nil
 }
 
-// Save writes the file into the store. The file's hash will be used
-// as filename. It returns the file's hash and any error encountered.
-func (s FileStore) Save(file io.ReadSeeker) (string, error) {
+// SaveFile saves the file into the FileStore.
+// Returns the hash of file.
+func (s FileStore) SaveFile(file io.ReadSeeker) (string, error) {
 	hash, err := getHash(file)
 	if err != nil {
 		return "", err
@@ -46,19 +44,14 @@ func (s FileStore) Save(file io.ReadSeeker) (string, error) {
 		return hash, nil
 	}
 
-	_, err = file.Seek(0, io.SeekStart)
-	if err != nil {
-		return "", nil
-	}
-
-	if err = s.write(hash, file); err != nil {
+	if err = s.createFileWithHash(hash, file); err != nil {
 		return "", err
 	}
 
 	return hash, nil
 }
 
-func (s FileStore) write(hash string, file io.Reader) error {
+func (s FileStore) createFileWithHash(hash string, file io.Reader) error {
 	newFile, err := fs.Create(path.Join(s.Path, hash))
 	if err != nil {
 		return err
@@ -76,8 +69,8 @@ func (s FileStore) write(hash string, file io.Reader) error {
 	return nil
 }
 
-// Get returns a io.ReadSeeker from the file with given hash in the store.
-func (s FileStore) Get(hash string) (io.ReadSeeker, error) {
+// GetFileWithHash returns an io.ReadSeeker from the file with given hash in the FileStore.
+func (s FileStore) GetFileWithHash(hash string) (io.ReadSeeker, error) {
 	exists, err := afero.Exists(fs, path.Join(s.Path, hash))
 	if err != nil {
 		return nil, err
@@ -93,7 +86,7 @@ func (s FileStore) Get(hash string) (io.ReadSeeker, error) {
 	return file, nil
 }
 
-// Delete deletes the file with given hash from the store.
-func (s FileStore) Delete(hash string) error {
+// DeleteFileWithHash deletes the file with given hash from the FileStore.
+func (s FileStore) DeleteFileWithHash(hash string) error {
 	return fs.Remove(path.Join(s.Path, hash))
 }

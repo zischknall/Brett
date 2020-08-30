@@ -33,12 +33,12 @@ func TestNewFileStore(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewFileStore(tt.args.path)
+			got, err := GetFileStore(tt.args.path)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("NewFileStore() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetFileStore() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewFileStore() got = %v, want %v", got, tt.want)
+				t.Errorf("GetFileStore() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -49,7 +49,7 @@ func TestFileStore_Save(t *testing.T) {
 	storePath := afero.GetTempDir(fs, "media")
 	err := afero.WriteFile(fs, path.Join(storePath, "966d77a20be11045ac1ffa0f42f8a97569e8ba70966b287575899d875bf62b9e"), []byte("  Test  "), 0755)
 	if err != nil {
-		t.Errorf("Save() error in setup: %v", err)
+		t.Errorf("SaveFile() error in setup: %v", err)
 	}
 
 	type fields struct {
@@ -85,13 +85,13 @@ func TestFileStore_Save(t *testing.T) {
 			s := FileStore{
 				Path: tt.fields.Path,
 			}
-			got, err := s.Save(tt.args.file)
+			got, err := s.SaveFile(tt.args.file)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Savnile() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("Save() got = %v, want %v", got, tt.want)
+				t.Errorf("SaveFile() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -102,11 +102,11 @@ func TestFileStore_Get(t *testing.T) {
 	storePath := afero.GetTempDir(fs, "media")
 	err := afero.WriteFile(fs, path.Join(storePath, "testfile"), []byte("  ?HelloWorldTest!  "), 0755)
 	if err != nil {
-		t.Errorf("Get() error in setup: %v", err)
+		t.Errorf("GetFileWithHash() error in setup: %v", err)
 	}
 	wantReader, err := fs.Open(path.Join(storePath, "testfile"))
 	if err != nil {
-		t.Errorf("Get() error in setup: %v", err)
+		t.Errorf("GetFileWithHash() error in setup: %v", err)
 	}
 
 	type fields struct {
@@ -142,13 +142,13 @@ func TestFileStore_Get(t *testing.T) {
 			s := FileStore{
 				Path: tt.fields.Path,
 			}
-			got, err := s.Get(tt.args.hash)
+			got, err := s.GetFileWithHash(tt.args.hash)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetFileWithHash() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Get() got = %v, want %v", got, tt.want)
+				t.Errorf("GetFileWithHash() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -157,3 +157,23 @@ func TestFileStore_Get(t *testing.T) {
 /*
    BENCHMARKS
 */
+
+func BenchmarkFileStore_SaveFile(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		reader := strings.NewReader("HelloWorld")
+		filestore := setupFileStoreWithTempDir()
+		b.StartTimer()
+
+		_, err := filestore.SaveFile(reader)
+		if err != nil {
+			b.Errorf("SaveFile() error = %v, wantErr nil", err)
+		}
+	}
+}
+
+func setupFileStoreWithTempDir() FileStore {
+	fs = afero.NewMemMapFs()
+	storePath := afero.GetTempDir(fs, "media")
+	return FileStore{Path: storePath}
+}
