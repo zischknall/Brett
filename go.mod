@@ -1,4 +1,4 @@
-module github.com/zischknall/LosBilderbrett
+module github.com/zischknall/Brett
 
 go 1.15
 

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/zischknall/LosBilderbrett/pkg/storage"
+	"github.com/zischknall/Brett/pkg/storage"
 
 	"github.com/gorilla/mux"
 )
@@ -76,7 +76,7 @@ const rootHTML = `
 <!DOCTYPE html>
 <html>
 <head>
-<title>LosBilderbrett</title>
+<title>Brett</title>
 </head>
 <body>
 <form method="post" action="/storage" enctype="multipart/form-data">
