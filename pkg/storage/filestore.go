@@ -16,8 +16,8 @@ type FileStore struct {
 }
 
 // GetFileStore creates a FileStore at given path.
-func GetFileStore(path string) (*FileStore, error) {
-	cleanPath := filepath.Clean(path)
+func GetFileStore(storeLocation string) (*FileStore, error) {
+	cleanPath := filepath.Clean(storeLocation)
 	err := fs.MkdirAll(cleanPath, 0755)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func (s FileStore) SaveFile(file io.ReadSeeker) (string, error) {
 		return hash, nil
 	}
 
-	if err = s.createFileWithHash(hash, file); err != nil {
+	if err := s.createFileWithHash(hash, file); err != nil {
 		return "", err
 	}
 

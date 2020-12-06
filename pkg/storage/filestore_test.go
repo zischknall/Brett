@@ -47,10 +47,6 @@ func TestNewFileStore(t *testing.T) {
 func TestFileStore_Save(t *testing.T) {
 	fs = afero.NewMemMapFs()
 	storePath := afero.GetTempDir(fs, "media")
-	err := afero.WriteFile(fs, path.Join(storePath, "966d77a20be11045ac1ffa0f42f8a97569e8ba70966b287575899d875bf62b9e"), []byte("  Test  "), 0755)
-	if err != nil {
-		t.Errorf("SaveFile() error in setup: %v", err)
-	}
 
 	type fields struct {
 		Path string
@@ -87,7 +83,7 @@ func TestFileStore_Save(t *testing.T) {
 			}
 			got, err := s.SaveFile(tt.args.file)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Savnile() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("SaveFile() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
